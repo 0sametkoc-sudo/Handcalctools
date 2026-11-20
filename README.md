@@ -10,7 +10,7 @@ Excel hand-calculation tools for structural joints. Each tool consists of:
 |---|---|---|---|
 | Bolted joint, single fastener (BOLT / SCREW / STUD) | `excel/Bolted_Joint_Tool.xlsx` | `docs/Bolted_Joint_Tool.docx/.pdf` | v2.0 – done |
 | Double-shear lug / clevis, HSB 26101-01 | `excel/HSB_Clevis_Tool.xlsx` | `docs/HSB_Clevis_Tool.docx/.pdf` | v7.0 – done |
-| Lug / pin / clevis, AFSAM Section 9 | – | – | next |
+| Lug / pin / clevis, AFSAM Section 9 | `excel/AFSAM_Lug_Tool.xlsx` | `docs/AFSAM_Lug_Tool.docx/.pdf` | v6.0 – done |
 
 ## Bolted Joint Tool v2.0 – changes from the previous two workbooks
 
@@ -48,6 +48,10 @@ python tools/screenshots_bolted_joint.py      # workbook screenshots for the man
 python tools/figures_hsb_clevis.py            # HSB clevis figures
 python tools/build_hsb_clevis.py              # HSB clevis workbook
 python tools/screenshots_hsb_clevis.py        # HSB clevis screenshots
+python tools/digitize/make_tables.py          # AFSAM chart digitization -> handcalc/afsam_charts.py + overlays
+python tools/figures_afsam.py                 # AFSAM sketches
+python tools/build_afsam_lug.py               # AFSAM workbook
+python tools/screenshots_afsam.py             # AFSAM screenshots
 ./tools/build_docs.sh                  # manuals -> docs/*.docx, docs/*.pdf (needs pandoc, Node + Playwright)
 ```
 
