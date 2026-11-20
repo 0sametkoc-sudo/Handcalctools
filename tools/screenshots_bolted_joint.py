@@ -35,25 +35,24 @@ def trim(im, pad=10):
     return im.crop((max(0, l - pad), max(0, t - pad), min(im.width, r + pad), min(im.height, b + pad)))
 
 
-_RECALC = None
+_RECALC = {}
 
 
-def recalculated():
+def recalculated(xlsx=XLSX):
     """Recalculate once with LibreOffice; return path of an .xlsx whose cells hold values."""
-    global _RECALC
-    if _RECALC is None:
+    if xlsx not in _RECALC:
         tmp = tempfile.mkdtemp()
         subprocess.run([soffice(), f"-env:UserInstallation={_profile()}", "--headless", "--calc", "--convert-to",
-                        "xlsx", "--outdir", tmp, XLSX], check=True, capture_output=True, timeout=180)
-        wb = openpyxl.load_workbook(os.path.join(tmp, os.path.basename(XLSX)), data_only=True)
-        _RECALC = os.path.join(tmp, "values.xlsx")
-        wb.save(_RECALC)
-    return _RECALC
+                        "xlsx", "--outdir", tmp, xlsx], check=True, capture_output=True, timeout=180)
+        wb = openpyxl.load_workbook(os.path.join(tmp, os.path.basename(xlsx)), data_only=True)
+        _RECALC[xlsx] = os.path.join(tmp, "values.xlsx")
+        wb.save(_RECALC[xlsx])
+    return _RECALC[xlsx]
 
 
-def shot(name, sheet, first_marker, last_marker, cols="B:H", extra_rows=0):
+def shot(name, sheet, first_marker, last_marker, cols="B:H", extra_rows=0, xlsx=XLSX):
     tmp = tempfile.mkdtemp()
-    wb = openpyxl.load_workbook(recalculated())
+    wb = openpyxl.load_workbook(recalculated(xlsx))
     ws = wb[sheet]
     r0 = find_row(ws, first_marker) if isinstance(first_marker, str) else first_marker
     r1 = (find_row(ws, last_marker) if isinstance(last_marker, str) else last_marker) + extra_rows

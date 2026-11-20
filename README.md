@@ -9,8 +9,8 @@ Excel hand-calculation tools for structural joints. Each tool consists of:
 | Tool | Workbook | Manual | Status |
 |---|---|---|---|
 | Bolted joint, single fastener (BOLT / SCREW / STUD) | `excel/Bolted_Joint_Tool.xlsx` | `docs/Bolted_Joint_Tool.docx/.pdf` | v2.0 – done |
-| Double-shear lug / clevis, HSB 26101-01 | – | – | next |
-| Lug / pin / clevis, AFSAM Section 9 | – | – | planned |
+| Double-shear lug / clevis, HSB 26101-01 | `excel/HSB_Clevis_Tool.xlsx` | `docs/HSB_Clevis_Tool.docx/.pdf` | v7.0 – done |
+| Lug / pin / clevis, AFSAM Section 9 | – | – | next |
 
 ## Bolted Joint Tool v2.0 – changes from the previous two workbooks
 
@@ -45,6 +45,9 @@ python tools/figures_bolted_joint.py          # schematic figures -> docs/figure
 python tools/figures_bolted_joint_theory.py   # theory figures (derivations, example plots)
 python tools/build_bolted_joint.py            # workbook layout -> excel/
 python tools/screenshots_bolted_joint.py      # workbook screenshots for the manual (needs LibreOffice)
+python tools/figures_hsb_clevis.py            # HSB clevis figures
+python tools/build_hsb_clevis.py              # HSB clevis workbook
+python tools/screenshots_hsb_clevis.py        # HSB clevis screenshots
 ./tools/build_docs.sh                  # manuals -> docs/*.docx, docs/*.pdf (needs pandoc, Node + Playwright)
 ```
 
