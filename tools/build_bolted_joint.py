@@ -479,6 +479,7 @@ def build(path=OUT):
     inp.freeze_panes(4, 0)
     inp.set_landscape()
     inp.fit_to_pages(1, 0)
+    inp.print_area(0, 0, r, 7)
 
     # ------------------------------------------------------------------ Calc
     calc.set_column("A:A", 2)
@@ -634,7 +635,8 @@ def build(path=OUT):
         f'" optional mode(s) not evaluated","PASS - all applicable modes")))', F["big"])
     wb.define_name("RF_gov", "=Results!$D$6")
     wb.define_name("status_all", "=Results!$D$8")
-    res.conditional_format(f"D{first + 1}:D{last_rf}", {"type": "cell", "criteria": "<", "value": 1,
+    res.conditional_format(f"D{first + 1}:D{last_rf}", {"type": "formula",
+                                                        "criteria": f"=AND(ISNUMBER(D{first + 1}),D{first + 1}<1)",
                                                         "format": F["fail"]})
     # torque window + key values
     r += 1

@@ -41,8 +41,10 @@ If you edit a formula in a workbook, run the tests to confirm that the reference
 ## Rebuilding
 
 ```bash
-python tools/figures_bolted_joint.py   # figures -> docs/figures
-python tools/build_bolted_joint.py     # workbook layout -> excel/
+python tools/figures_bolted_joint.py          # schematic figures -> docs/figures
+python tools/figures_bolted_joint_theory.py   # theory figures (derivations, example plots)
+python tools/build_bolted_joint.py            # workbook layout -> excel/
+python tools/screenshots_bolted_joint.py      # workbook screenshots for the manual (needs LibreOffice)
 ./tools/build_docs.sh                  # manuals -> docs/*.docx, docs/*.pdf (needs pandoc, Node + Playwright)
 ```
 
