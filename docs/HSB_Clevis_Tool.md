@@ -67,6 +67,15 @@ Each row has two input cells: **Female lug (one prong)** and **Male lug**. The *
 
 **The most common input error is w.** In HSB notation, $w$ is the *smaller edge distance perpendicular to the load*, i.e. a **half width**, not the full lug width. The net section is $2(w - d/2)\,t$.
 
+**$e$ and $w$ are measured relative to the load direction, not to the lug axis:**
+
+* $e$ is the edge distance **along** the load;
+* $w$ is the smaller edge distance **perpendicular** to the load.
+
+For an axial load ($\varphi = 0$), $w$ is the half width. For a transverse load ($\varphi = 90°$), $e$ runs to the side of the lug and $w$ is the smaller of the head-side and shank-side distances. For a standard concentric lug, with a round head of radius $r$ and half width $r$, both stay close to $r$ at every angle.
+
+![Definition of e and w relative to the load direction (sketch on sheet Input).](figures/hsb_ew_definition.png){width=85%}
+
 For the female lug, $t$ is the thickness of **one prong**. The load on that prong is $s\,P$, where $s = 0.5$ for a symmetric clevis.
 
 ![Load path in the double-shear joint (sketch on sheet Input).](figures/hsb_joint.png){width=85%}
@@ -165,6 +174,21 @@ For $0 < \beta < 45°$ the value is interpolated linearly in $\beta$.
 ![$K_{tb,1}$ versus $2r/d$.](figures/hsb_ktb1.png){width=70%}
 
 $K_{tb,1}$ falls as the head grows: more material around the hole spreads the bearing load. A tapered lug has lower stress concentration than a straight one, because its sides support the head. The two $\varphi = 90°$ branches meet at $2r/d = 1.723$ (difference < 0.01 %).
+
+**Which combinations are closed form?** HSB gives closed forms for the straight lug at $\varphi = 0$ and $90°$, and for the 45° tapered lug at any $\varphi$. All other combinations are interpolated linearly:
+
+* a straight lug at $0 < \varphi < 90°$ is interpolated in $\varphi$;
+* a lug with $0 < \beta < 45°$ is interpolated in $\beta$.
+
+The *Calc* sheet shows the basis for each lug (*Basis of $K_{tb,1}$*), and *Results* repeats it in the top block. A scan over $1.4 \le 2r/d \le 3.4$, $0.7 \le h/r \le 2$, $\beta = 0$–45° and $\varphi = 0$–90° gave continuous, positive values everywhere, with no jumps at the branch limits.
+
+| $2r/d = 2$, $h = r$ | $\varphi = 0$ | 30 | 45 | 60 | 90 |
+|---|---|---|---|---|---|
+| straight, $\beta = 0$ | 2.750 | 2.863 | 2.919 | 2.975 | 3.088 |
+| $\beta = 22.5°$ (interpolated) | 2.583 | 2.781 | 2.813 | 2.801 | 2.643 |
+| tapered, $\beta = 45°$ | 2.417 | 2.699 | 2.707 | 2.626 | 2.198 |
+
+The tapered-lug expression peaks near $\varphi \approx 39°$ and gives a lower value at 90° than at 0°. This follows directly from the HSB polynomial, which is confirmed at $\varphi = 30°$ by the published example.
 
 ## 4.4 Eccentricity and bearing efficiency (HSB 3.2.1c–e)
 
@@ -274,7 +298,13 @@ The HSB method is calibrated on test data for steel and high-strength aluminium 
 * **Workbook vs. Python.** For two cases, the workbook and the Python implementation agree to $10^{-9}$ for every intermediate value, every RF and every status. The second case covers an eccentric head ($h \ne r$), $\varphi = 60°/75°$, $\beta = 20°$ and a lug without bushing.
 * **Branch continuity.** The tests also check the continuity of the piecewise expressions at $2r/d = 1.723$ and $e/d = 1.5$ and $2.0$.
 
-The published example covers $h/r = 1$ only, and $\varphi$ only at 0° and 30° (with $\beta = 45°$). The eccentricity and $\varphi$-interpolation branches are therefore verified for internal consistency, not against a published number.
+**Coverage of the published example.** The example covers $h/r = 1$ only (so $H = 1$), a straight lug at $\varphi = 0$, and a 45° tapered lug at $\varphi = 30°$. The following are therefore verified for internal consistency (workbook = Python, continuity, physical range), but not against a published number:
+
+* the eccentricity factor $H$ for $h \ne r$;
+* the $\varphi$-interpolation of the straight lug;
+* the $\beta$-interpolation.
+
+If the HSB text is available, compare these interpolation rules with it once.
 
 # 8 Changes from the previous workbook (v6.0)
 
@@ -283,6 +313,7 @@ The published example covers $h/r = 1$ only, and $\varphi$ only at 0° and 30° 
 * **Bug fixed:** the Dashboard showed a hard-coded $r = 30$ mm instead of the input value.
 * **Bug fixed:** the input check "$d_a \ge d$" was wrong, and failed for HSB's own example ($d_a = 16 < d = 24$). $d_a$ is the bolt diameter (bushing bore).
 * The bushing can be switched off (N/A).
+* The input descriptions and sketches define $e$ and $w$ relative to the load direction; the earlier text implied the axial direction only. The basis of $K_{tb,1}$ (closed form or interpolated) is shown for each lug.
 * The verification no longer uses a separate copy of the formulas, which could drift from the calculation sheet. The automated tests run the actual calculation against the published values.
 * Out-of-scope modes are listed on Results as INFO.
 

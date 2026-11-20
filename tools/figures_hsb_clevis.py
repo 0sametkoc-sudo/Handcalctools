@@ -53,8 +53,6 @@ def lug_geometry():
     dim(ax, (-d / 2, -1.15), (d / 2, -1.15), "d (hole / bushing OD)", off=(0, -0.28))
     dim(ax, (-da / 2, -0.35), (da / 2, -0.35), "", off=(0, 0))
     ax.text(-2.2, -0.7, "da (bolt)", color=C_DIM, fontsize=9)
-    dim(ax, (-0.3, 0), (-0.3, r), "e", off=(-0.25, 1.0))
-    dim(ax, (0, -2.2), (xs + (ys + 2.2) * tb * 0.35, -2.2), "w (half width)", off=(0.4, 0.3))
     # load arrow (load on the lug from the bolt, angle phi from the axis)
     phi = 30
     p = np.radians(90 - phi)
@@ -65,7 +63,8 @@ def lug_geometry():
     ax.plot(1.6 * np.cos(a), 1.6 * np.sin(a), color=C_RED, lw=0.8)
     ax.text(0.55, 1.75, r"$\varphi$", color=C_RED, fontsize=11)
     ax.text(x_low + 0.1, y_low + 1.0, r"taper $\beta$", fontsize=9)
-    ax.text(-r - 0.4, r + 0.5, "h: eccentricity of the head contour (HSB Fig. 1);\nh = r for a concentric head",
+    ax.text(-r - 0.4, r + 0.5, "h: eccentricity of the head contour (HSB Fig. 1);\nh = r for a concentric head.\n"
+            "e and w: measured relative to the load direction (see below)",
             fontsize=8.5)
     ax.set_xlim(-r - 1.0, r + 2.4)
     ax.set_ylim(y_low - 0.5, r + 1.3)
@@ -166,9 +165,39 @@ def rbry_chart():
     save(fig, "hsb_rbry.png")
 
 
+def ew_definition():
+    """e and w are measured relative to the LOAD direction."""
+    fig, axs = plt.subplots(1, 2, figsize=(9.5, 4.4))
+    r, d, w0 = 2.0, 1.6, 2.0
+    for ax, phi in zip(axs, (0, 90)):
+        th = np.linspace(0, np.pi, 60)
+        outline = np.vstack([np.c_[r * np.cos(th), r * np.sin(th)], [[-w0, -3.6], [w0, -3.6]]])
+        ax.add_patch(Polygon(outline, closed=True, fc=C_LUG, ec="k"))
+        ax.add_patch(Circle((0, 0), d / 2, fc="white", ec="k"))
+        p = np.radians(90 - phi)
+        u = np.array([np.cos(p), np.sin(p)])
+        ax.add_patch(FancyArrowPatch((0, 0), tuple(3.3 * u), arrowstyle="-|>", mutation_scale=16, color=C_RED,
+                                     lw=1.8))
+        ax.text(*(3.35 * u + np.array([0.05, 0.1])), "F", color=C_RED, fontsize=11)
+        if phi == 0:
+            dim(ax, (0.25, 0), (0.25, r), "e", off=(0.2, 0.3))
+            dim(ax, (0, -1.6), (w0, -1.6), "w = half width", off=(0.2, -0.3))
+        else:
+            dim(ax, (0, 0.25), (w0, 0.25), "e", off=(0, 0.25))
+            dim(ax, (-0.25, 0), (-0.25, r), "w = smaller\nperpendicular\ndistance", off=(-1.25, 0.5))
+        ax.set_title(rf"$\varphi$ = {phi} deg", fontsize=10, weight="bold")
+        ax.set_xlim(-3.4, 4.0)
+        ax.set_ylim(-3.9, 3.9)
+        ax.set_aspect("equal")
+        ax.axis("off")
+    fig.suptitle("e: edge distance ALONG the load.   w: smaller edge distance PERPENDICULAR to the load.",
+                 fontsize=10)
+    save(fig, "hsb_ew_definition.png")
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
-    for f in (lug_geometry, joint_figure, ktb_chart, kbr_chart, rbry_chart):
+    for f in (lug_geometry, joint_figure, ew_definition, ktb_chart, kbr_chart, rbry_chart):
         f()
     print(OUT)
 

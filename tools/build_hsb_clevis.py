@@ -28,12 +28,16 @@ LUG_INPUTS = [
      "If a bushing is fitted: the hole in the lug = bushing OUTER diameter.", "num"),
     ("r", "Outer radius of the lug head", "r", 24, 24, "mm", "Hole centre to the outer contour.", "num"),
     ("h", "Eccentricity", "h", 24, 24, "mm", "h = r for a concentric lug head.", "num"),
-    ("e", "Edge distance in the load direction", "e", 24, 24, "mm", "Hole centre to the lug edge along the load.", "num"),
-    ("w", "Smaller edge distance perpendicular to the load", "w", 24, 24, "mm",
-     "HALF width, not the full lug width (most common input error). Net section uses (w - d/2).", "num"),
+    ("e", "Edge distance in the LOAD direction", "e", 24, 24, "mm",
+     "Hole centre to the lug edge, measured ALONG the load direction (phi). phi = 0: towards the head. "
+     "phi = 90: towards the side of the lug.", "num"),
+    ("w", "Smaller edge distance PERPENDICULAR to the load", "w", 24, 24, "mm",
+     "Hole centre to the nearer lug edge, measured at 90 deg to the load. phi = 0: the HALF width (not the full "
+     "width). phi = 90: the smaller of head-side and shank-side distances. Net section = 2(w - d/2) t.", "num"),
     ("t", "Thickness", "t", 5, 12, "mm", "Female: ONE prong.  Male: the single inner lug.", "num"),
     ("beta", "Taper angle", "beta", 45, 0, "deg", "0 = straight (parallel-sided) lug, 45 = tapered. Valid 0-45.", "num"),
-    ("phi", "Load angle", "phi", 30, 0, "deg", "0 = along the lug axis, 90 = transverse. Valid 0-90.", "num"),
+    ("phi", "Load angle", "phi", 30, 0, "deg", "Angle between the load and the lug axis, load pulling the lug away from the bolt. 0 = axial, 90 = "
+     "transverse. Valid 0-90; a load component towards the shank (phi > 90) is not covered.", "num"),
     ("sec", "2. LUG MATERIAL"),
     ("Rm", "Tensile ultimate strength", "Rm", 430, 470, "MPa", "Material specification (cross-grain if relevant).", "num"),
     ("Rp", "Tensile yield strength (0.2 %)", "Rp0.2", 290, 395, "MPa", "", "num"),
@@ -80,6 +84,10 @@ CALC = [
      "=IF(phi_{s}<=45,H0_{s}+phi_{s}/45*(H45_{s}-H0_{s}),H45_{s}+(phi_{s}-45)/45*(H90_{s}-H45_{s}))", "-",
      "linear in phi between 0, 45, 90"),
     ("Ktb", "Stress concentration factor", "Ktb", "=Hc_{s}*k1_{s}", "-", "Ktb = H Ktb,1"),
+    ("kbasis", "Basis of Ktb,1", "",
+     '=IF(OR(beta_{s}>=45,AND(beta_{s}<=0,OR(phi_{s}<=0,phi_{s}>=90))),"HSB closed form",'
+     'IF(beta_{s}<=0,"interpolated in phi","interpolated in beta"))', "-",
+     "closed forms: straight lug at phi = 0 and 90; tapered (45 deg) lug at any phi"),
     ("KBR", "Bearing efficiency factor", "KBR", "=7.502*(Ktb_{s}+1.125)^(-1.637)", "-", "7.502 (Ktb + 1.125)^-1.637"),
     ("sec", "3.2.2  Static failure loads (allowables, N)"),
     ("FLu", "Case 1  lug ultimate strength", "F_Lu", "=0.84*KBR_{s}*d_{s}*t_{s}*Rm_{s}", "N", "0.84 KBR d t Rm  (no j)"),
@@ -137,6 +145,8 @@ INFO_MODES = [
      "Lug tool (Section 9.4: pin shear, pin bending, balanced design)."),
     ("Lug fatigue", "Static method only. Check fatigue separately (stress concentration Ktb is a useful input)."),
     ("Bushing press fit / migration", "Interference-fit stresses and bushing rotation are not covered."),
+    ("Load towards the shank (phi > 90)", "HSB 26101-01 covers 0 <= phi <= 90 (load pulling the lug away from the "
+     "bolt). For reversed / compressive lug loads check the shank and lug buckling separately."),
 ]
 
 
@@ -182,6 +192,8 @@ def build(path=OUT):
             wb.define_name(f"{key}_{s}", f"=Input!${SUF[s]}${r + 1}")
         inp.write(r, 5, unit)
         inp.write(r, 6, desc, F["txt"])
+        if len(desc) > 95:
+            inp.set_row(r, 27 if len(desc) < 190 else 40)
         r += 1
     inp.merge_range(r, 1, r, 6, "4. JOINT LOAD AND FACTORS", F["sec"])
     r += 1
@@ -219,7 +231,10 @@ def build(path=OUT):
         inp.insert_image("I5", fig, {"x_scale": 0.5, "y_scale": 0.5, "object_position": 3})
     fig2 = os.path.join(ROOT, "docs", "figures", "hsb_joint.png")
     if os.path.exists(fig2):
-        inp.insert_image("I32", fig2, {"x_scale": 0.5, "y_scale": 0.5, "object_position": 3})
+        inp.insert_image("I52", fig2, {"x_scale": 0.5, "y_scale": 0.5, "object_position": 3})
+    fig3 = os.path.join(ROOT, "docs", "figures", "hsb_ew_definition.png")
+    if os.path.exists(fig3):
+        inp.insert_image("I28", fig3, {"x_scale": 0.5, "y_scale": 0.5, "object_position": 3})
     inp.freeze_panes(4, 0)
     inp.set_landscape()
     inp.fit_to_pages(1, 0)
@@ -275,7 +290,8 @@ def build(path=OUT):
               ("GOVERNING RESERVE FACTOR", None, "big"),
               ("Governing lug and mode", None, "rest"),
               ("OVERALL STATUS", None, "big"),
-              ("Allowable joint LIMIT load  (= RF x P)", None, "big0")]
+              ("Allowable joint LIMIT load  (= RF x P)", None, "big0"),
+              ("Ktb,1 basis  (female / male)", '=kbasis_f&"  /  "&kbasis_m', "rest")]
     for i, (lab, f, fm) in enumerate(labels):
         res.write(3 + i, 1, lab, F["bold"])
         res.merge_range(3 + i, 3, 3 + i, 5, "", F[fm])
